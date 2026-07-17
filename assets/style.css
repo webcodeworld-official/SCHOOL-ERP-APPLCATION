@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --panel:        #27272A;
+    --hairline:     #3F3F46;
+    --teal:         #14B8A6;
+    --text-hi:      #FAFAFA;
+    --text-lo:      #A1A1AA;
+    --amber:        #FBBF24;
+    --amber-bg:     rgba(251, 191, 36, 0.10);
+    --amber-border: rgba(251, 191, 36, 0.30);
+    --green:        #4ADE80;
+    --green-bg:     rgba(74, 222, 128, 0.10);
+    --green-border: rgba(74, 222, 128, 0.30);
+    --shadow:       0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+.erp-hero {
+    padding: 2.6rem 2.6rem;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    margin-bottom: 1.6rem;
+    box-shadow: var(--shadow);
+}
+.erp-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.erp-title {
+    font-weight: 800;
+    font-size: 2.3rem;
+    color: var(--text-hi);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+.erp-subtitle {
+    color: var(--text-lo);
+    font-size: 1rem;
+    margin-top: 0.7rem;
+    line-height: 1.6;
+    max-width: 70ch;
+}
+
+.attn-card {
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-left: 3px solid var(--amber);
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+}
+.attn-card.calm {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+    border-left-color: var(--green);
+}
+.attn-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-hi);
+    line-height: 1;
+}
+.attn-label {
+    color: var(--text-lo);
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    font-weight: 700;
+    margin: 1.6rem 0 0.7rem 0;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 0.5rem;
+}
+
+.kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: var(--shadow);
+}
+.kpi-value {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text-hi);
+    letter-spacing: -0.02em;
+}
+.kpi-label {
+    color: var(--text-lo);
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    font-weight: 500;
+}
+
+.feature-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: var(--shadow);
+}
+.feature-card .icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+.feature-card h4 { color: var(--text-hi); margin: 0 0 0.3rem 0; font-weight: 700; font-size: 1.05rem; }
+.feature-card p { color: var(--text-lo); font-size: 0.85rem; margin: 0; line-height: 1.5; }
+
+.nav-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 1.8rem;
+    height: 100%;
+    box-shadow: var(--shadow);
+}
+.nav-card h3 { color: var(--text-hi); margin: 0 0 0.5rem 0; font-weight: 700; font-size: 1.3rem; }
+.nav-card p { color: var(--text-lo); font-size: 0.9rem; margin-bottom: 0; line-height: 1.5; }

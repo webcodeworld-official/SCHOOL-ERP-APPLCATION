@@ -1,147 +1,125 @@
 import streamlit as st
-from streamlit_extras.metric_cards import style_metric_cards
-from utils import load_data
-from datetime import datetime
-
-# -------------------------------------------------------
-# PAGE CONFIGURATION
-# -------------------------------------------------------
+from database.users_queries import ensure_users_table, seed_demo_users, authenticate
 
 st.set_page_config(
-    page_title="School ERP Analytics Dashboard",
+    page_title="School ERP System",
     page_icon="🏫",
     layout="wide"
 )
 
-# -------------------------------------------------------
-# LOAD DATA
-# -------------------------------------------------------
+# --------------------------------------------------
+# ONE-TIME SETUP (safe to run every startup)
+# --------------------------------------------------
 
-data = load_data()
+ensure_users_table()
+seed_demo_users()
 
-students = data["STUDENT"]
-staff = data["STAFF"]
-visitors = data["VISITORS"]
-transport = data["TRANSPORTATION"]
-library = data["LIBRARY"]
-fees = data["FEES"]
-attendance = data["ATTENDENCE"]
-exam = data["EXAMINATION"]
+# --------------------------------------------------
+# PERMISSION MAP — which Management pages each role can access
+# --------------------------------------------------
 
-# -------------------------------------------------------
-# KPI VALUES
-# -------------------------------------------------------
+MANAGEMENT_ACCESS = {
+    "Admin": "all",
+    "Teacher": ["Examination Management"],
+    "Accountant": ["Fee Management"],
+}
 
-total_students = len(students)
-total_staff = len(staff)
-total_visitors = len(visitors)
-total_buses = transport["Bus_No"].nunique()
+# --------------------------------------------------
+# LOGIN GATE
+# --------------------------------------------------
 
-books_issued = len(library)
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
 
-total_fee = fees["Amount_Paid"].sum()
+if not st.session_state["authenticated"]:
 
-attendance_percent = (
-    attendance["Status"]
-    .isin(["Present", "Late"])
-    .mean() * 100
-)
+    st.markdown("""
+    <div style="max-width:420px; margin: 4rem auto; text-align:center;">
+        <h1>🏫 School ERP System</h1>
+        <p style="color:#A1A1AA;">Sign in to continue</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-avg_marks = exam["Percentage"].mean()
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-# -------------------------------------------------------
-# HEADER
-# -------------------------------------------------------
+        if st.button("Log In", use_container_width=True):
+            result = authenticate(username, password)
+            if result:
+                role, full_name = result
+                st.session_state["authenticated"] = True
+                st.session_state["username"] = username
+                st.session_state["role"] = role
+                st.session_state["full_name"] = full_name
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
 
-st.title("🏫 School ERP Analytics Dashboard")
+        with st.expander("Demo accounts"):
+            st.caption("admin / admin123 — full access")
+            st.caption("teacher / teacher123 — Examination + all Analytics")
+            st.caption("accountant / accountant123 — Fees + all Analytics")
 
-today = datetime.now()
+    st.stop()
 
-col1, col2 = st.columns([1,1])
+# --------------------------------------------------
+# LOGGED IN — build navigation based on role
+# --------------------------------------------------
 
-with col1:
-    st.write(f"📅 **Date :** {today.strftime('%d %B %Y')}")
+role = st.session_state["role"]
 
-with col2:
-    st.write(f"🕒 **Time :** {today.strftime('%I:%M %p')}")
+dashboard = st.Page("pages/00_Dashboard.py", title="Home", icon="🏠", default=True)
 
-st.divider()
+analytics_hub = st.Page("pages/analytics_hub.py", title="Analytics Hub", icon="📊")
+management_hub = st.Page("pages/management_hub.py", title="ERP Management Hub", icon="⚙️")
 
-# -------------------------------------------------------
-# KPI ROW 1
-# -------------------------------------------------------
+# Analytics is open to every logged-in role (read-only, no risk in viewing)
+analytics_pages = [
+    analytics_hub,
+    st.Page("pages/01_Students_Analytics.py", title="Students Analytics", icon="🎓"),
+    st.Page("pages/02_Staff_Analytics.py", title="Staff Analytics", icon="👩‍🏫"),
+    st.Page("pages/03_Visitors_Analytics.py", title="Visitors Analytics", icon="🚶"),
+    st.Page("pages/04_Transportation_Analytics.py", title="Transportation Analytics", icon="🚌"),
+    st.Page("pages/05_Admission_Analytics.py", title="Admission Analytics", icon="📥"),
+    st.Page("pages/06_Examination_Analytics.py", title="Examination Analytics", icon="📝"),
+    st.Page("pages/07_Fees_Analytics.py", title="Fees Analytics", icon="💰"),
+    st.Page("pages/08_Library_Analytics.py", title="Library Analytics", icon="📚"),
+]
 
-c1, c2, c3, c4 = st.columns(4)
+# All possible management pages, with a label matching MANAGEMENT_ACCESS keys
+all_management_pages = {
+    "Student Management": st.Page("pages/09_Student_Management.py", title="Student Management", icon="👨‍🎓"),
+    "Admission Management": st.Page("pages/16_Admission_Management.py", title="Admission Management", icon="📥"),
+    "Staff Management": st.Page("pages/10_Staff_Management.py", title="Staff Management", icon="👩‍🏫"),
+    "Visitor Management": st.Page("pages/11_Visitor_Management.py", title="Visitor Management", icon="🚶"),
+    "Library Management": st.Page("pages/12_Library_Management.py", title="Library Management", icon="📚"),
+    "Transport Management": st.Page("pages/13_Transport_Management.py", title="Transport Management", icon="🚌"),
+    "Fee Management": st.Page("pages/14_Fee_Management.py", title="Fee Management", icon="💰"),
+    "Examination Management": st.Page("pages/15_Examination_Management.py", title="Examination Management", icon="📝"),
+}
 
-c1.metric("👨‍🎓 Students", total_students)
-c2.metric("👩‍🏫 Staff", total_staff)
-c3.metric("🚶 Visitors", total_visitors)
-c4.metric("🚌 Buses", total_buses)
+access = MANAGEMENT_ACCESS.get(role, [])
 
-style_metric_cards(
-    background_color="#1E293B",
-    border_left_color="#2563EB",
-    border_color="#334155"
-)
+if access == "all":
+    allowed_management = list(all_management_pages.values())
+else:
+    allowed_management = [all_management_pages[name] for name in access if name in all_management_pages]
 
-st.write("")
+management_pages = [management_hub] + allowed_management
 
-# -------------------------------------------------------
-# KPI ROW 2
-# -------------------------------------------------------
+settings_page = st.Page("pages/17_Settings.py", title="Settings", icon="⚙️")
 
-c5, c6, c7, c8 = st.columns(4)
+nav_dict = {
+    "": [dashboard],
+    "📊 ANALYTICS": analytics_pages,
+    "⚙️ ERP MANAGEMENT": management_pages,
+}
 
-c5.metric("📚 Books Issued", books_issued)
+# Only Admin sees Settings
+if role == "Admin":
+    nav_dict[" "] = [settings_page]
 
-c6.metric(
-    "💰 Fee Collection",
-    f"₹ {total_fee/100000:.2f} L"
-)
-
-c7.metric(
-    "📅 Attendance",
-    f"{attendance_percent:.1f}%"
-)
-
-c8.metric(
-    "📝 Avg Percentage",
-    f"{avg_marks:.1f}%"
-)
-
-style_metric_cards(
-    background_color="#1E293B",
-    border_left_color="#16A34A",
-    border_color="#334155"
-)
-
-st.divider()
-
-# -------------------------------------------------------
-# WELCOME
-# -------------------------------------------------------
-
-st.subheader("Welcome 👋")
-
-st.info(
-"""
-#### MODULES INCLUDED:
-🎓 Students
-
-👩‍🏫 Staff
-
-🚶 Visitors
-
-🚌 Transportation
-
-📚 Library
-
-💰 Fees
-
-📅 Attendance
-
-📝 Examination
-
-📥 Admission
-"""
-)
+pg = st.navigation(nav_dict)
+pg.run()

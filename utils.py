@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-
+import re
 
 # =========================================================
 # DATA LOADING
@@ -99,16 +99,18 @@ def kpi_row(items):
     """
     items = [
         ("👨‍🎓 Total Students", len(filtered)),
-        ("👦 Boys", boys_count),
-        ("👧 Girls", girls_count),
-        ("🏫 Classes", filtered["Class"].nunique()),
+        ...
     ]
-    Renders an evenly spaced row of st.metric cards.
+    Renders KPI cards styled to match the rest of the app.
     """
     cols = st.columns(len(items))
     for col, (label, value) in zip(cols, items):
-        col.metric(label, value)
-
+        col.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-value">{value}</div>
+            <div class="kpi-label">{label}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # =========================================================
 # FORMATTING
@@ -135,14 +137,11 @@ def format_currency(amount, always_lakh_above=100000):
 
 def chart_with_insight(fig, insight_text, box=st.success, key=None):
     """
-    Renders a plotly chart followed by a styled insight callout,
-    so every page uses the same wrapper instead of repeating
-    st.plotly_chart(...) + st.success("Insight: ...") everywhere.
+    Renders a plotly chart (dark-themed) followed by a styled insight callout.
     """
+    apply_dark_theme(fig)
     st.plotly_chart(fig, use_container_width=True, key=key)
     box(f"💡 Insight: {insight_text}")
-
-
 # =========================================================
 # EXPORT
 # =========================================================
@@ -159,3 +158,51 @@ def download_button(df, filename="filtered_data.csv", label="⬇️ Download Fil
         file_name=filename,
         mime="text/csv",
     )
+
+def is_valid_phone(phone):
+    """Valid Indian mobile: exactly 10 digits, starts with 6-9."""
+    return bool(re.fullmatch(r"[6-9]\d{9}", str(phone).strip()))
+
+def is_valid_email(email):
+    """Basic email format check."""
+    return bool(re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", str(email).strip()))
+
+import hashlib
+import secrets
+
+def hash_password(password, salt=None):
+    """Returns (hashed_password, salt). Generates a new salt if none given."""
+    if salt is None:
+        salt = secrets.token_hex(16)
+    hashed = hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), bytes.fromhex(salt), 100_000
+    ).hex()
+    return hashed, salt
+
+def verify_password(password, salt, stored_hash):
+    """Checks a login attempt against the stored hash+salt."""
+    check_hash, _ = hash_password(password, salt)
+    return check_hash == stored_hash
+
+from pathlib import Path
+import streamlit as st
+
+def load_custom_css():
+    css_path = Path(__file__).resolve().parent / "assets" / "style.css"
+    with open(css_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def apply_dark_theme(fig):
+    """Applies the app's dark theme to any Plotly figure."""
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#27272A",
+        plot_bgcolor="#27272A",
+        font_color="#FAFAFA",
+        title_font_color="#FAFAFA",
+        legend_font_color="#FAFAFA",
+        xaxis=dict(gridcolor="#3F3F46", color="#A1A1AA"),
+        yaxis=dict(gridcolor="#3F3F46", color="#A1A1AA"),
+        margin=dict(t=50, b=30, l=30, r=30),
+    )
+    return fig
