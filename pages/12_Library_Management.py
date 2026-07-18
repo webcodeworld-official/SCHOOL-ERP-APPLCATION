@@ -13,6 +13,10 @@ from components.library_dialogs import (
 from utils import load_custom_css
 load_custom_css()
 
+if not st.session_state.get("authenticated"):
+    st.error("Please log in first.")
+    st.stop()
+
 records = get_all_library_records()
 
 st.title("📚 Library Management")

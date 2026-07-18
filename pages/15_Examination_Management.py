@@ -8,6 +8,10 @@ from database.examination_queries import (
 from utils import load_custom_css
 load_custom_css()
 
+if not st.session_state.get("authenticated"):
+    st.error("Please log in first.")
+    st.stop()
+
 st.title("📝 Examination Management")
 st.caption("Enter marks in bulk for a class, or manage individual results.")
 st.divider()

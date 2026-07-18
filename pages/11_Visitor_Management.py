@@ -11,6 +11,10 @@ from components.visitor_dialogs import (
 from utils import load_custom_css
 load_custom_css()
 
+if not st.session_state.get("authenticated"):
+    st.error("Please log in first.")
+    st.stop()
+
 visitors = get_all_visitors()
 
 st.title("🚶 Visitor Management")

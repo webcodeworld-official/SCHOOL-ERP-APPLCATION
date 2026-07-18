@@ -3,6 +3,10 @@ from utils import load_custom_css
 
 load_custom_css()
 
+if not st.session_state.get("authenticated"):
+    st.error("Please log in first.")
+    st.stop()
+
 st.markdown("""
 <div class="erp-hero">
     <div class="erp-eyebrow">ERP Management</div>

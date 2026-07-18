@@ -10,11 +10,15 @@ from utils import load_custom_css
 
 load_custom_css()
 
+if not st.session_state.get("authenticated"):
+    st.error("Session expired. Please log in again.")
+    st.stop()
+
 with st.sidebar:
-    st.markdown(f"**{st.session_state['full_name']}**")
-    st.caption(f"Role: {st.session_state['role']}")
+    st.markdown(f"**{st.session_state.get('full_name', 'User')}**")
+    st.caption(f"Role: {st.session_state.get('role', 'Unknown')}")
     if st.button("🚪 Log Out", use_container_width=True):
-        st.session_state["authenticated"] = False
+        st.session_state.clear()
         st.rerun()
         
 # --------------------------------------------------

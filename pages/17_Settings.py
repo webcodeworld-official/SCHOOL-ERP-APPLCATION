@@ -6,6 +6,10 @@ from datetime import datetime
 from database.connection import get_connection, DATABASE
 from utils import load_custom_css
 
+if not st.session_state.get("authenticated"):
+    st.error("Please log in first.")
+    st.stop()
+
 # --------------------------------------------------
 # THEME PRESETS (for our custom CSS classes only)
 # --------------------------------------------------
