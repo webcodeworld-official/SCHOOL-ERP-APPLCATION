@@ -16,7 +16,11 @@ if not st.session_state.get("authenticated"):
     st.error("Please log in first.")
     st.stop()
 
-records = get_all_fees()
+records = get_all_fees(branch_id=st.session_state.get("active_branch_id"))
+
+from database.branch_queries import get_branch_name
+current_branch_label = get_branch_name(st.session_state.get("active_branch_id"))
+st.caption(f"🏢 Viewing: **{current_branch_label}**")
 
 st.title("💰 Fee Management")
 st.caption("Manage student fee records and payments.")

@@ -69,10 +69,35 @@ def admission_form(record=None, unassigned_df=None):
             key=f"fee_{key_suffix}"
         )
 
+    st.divider()
+    st.caption("Scholarship / Discount Eligibility")
+
+    from database.admission_queries import DISCOUNT_TYPES, calculate_discount_percentage
+
+    discount_type = st.selectbox(
+        "Discount Type", DISCOUNT_TYPES,
+        index=DISCOUNT_TYPES.index(record.get("Discount_Type") or "None"),
+        key=f"discount_type_{key_suffix}"
+    )
+
+    entrance_test_score = None
+    if discount_type == "Merit-Based":
+        entrance_test_score = st.number_input(
+            "Entrance Test Score (%)", min_value=0, max_value=100,
+            value=int(record.get("Entrance_Test_Score") or 0),
+            key=f"entrance_score_{key_suffix}"
+        )
+
+    calculated_percentage = calculate_discount_percentage(discount_type, entrance_test_score)
+    st.info(f"📊 Calculated Discount: **{calculated_percentage}%**")
+
     return {
         "Student_ID": student_id,
         "Previous_School": previous_school,
         "Admission_Status": admission_status,
         "Entrance_Test": entrance_test,
         "Admission_Fee": admission_fee,
+        "Discount_Type": discount_type,
+        "Entrance_Test_Score": entrance_test_score,
+        "Discount_Percentage": calculated_percentage,
     }

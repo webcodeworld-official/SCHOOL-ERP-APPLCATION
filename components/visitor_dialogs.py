@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import date, datetime
+from datetime import date
 from database.visitor_queries import (
     add_visitor, update_visitor, delete_visitor,
     get_next_visitor_id, generate_pass_no, get_visitor_dict
@@ -9,12 +9,28 @@ from components.visitor_form import visitor_form
 
 @st.dialog("➕ Add Visitor")
 def add_visitor_dialog():
-
     next_id = get_next_visitor_id()
     pass_no = generate_pass_no(next_id)
     preview = {"Visitor_ID": next_id, "Pass_No": pass_no}
 
     data = visitor_form(preview)
+
+    active_branch_id = st.session_state.get("active_branch_id")
+    if active_branch_id is None:
+        from database.branch_queries import get_all_branches
+        branches = get_all_branches()
+        if branches.empty:
+            st.error("No branches exist yet. Add a branch first (Settings).")
+            branch_id_for_visitor = None
+        else:
+            branch_choice = st.selectbox(
+                "Which Branch is this visit at?", branches["Branch_Name"].tolist(), key="add_visitor_branch_pick"
+            )
+            branch_id_for_visitor = int(
+                branches[branches["Branch_Name"] == branch_choice]["Branch_ID"].iloc[0]
+            )
+    else:
+        branch_id_for_visitor = active_branch_id
 
     if st.button("Save", use_container_width=True):
 
@@ -26,23 +42,27 @@ def add_visitor_dialog():
             st.error("Check Out time cannot be before Check In time.")
             return
 
+        if branch_id_for_visitor is None:
+            st.error("A branch must be selected.")
+            return
+
         values = (
             next_id,
             str(data["Visit_Date"]),
             data["Visitor_Name"],
             data["Visitor_Type"],
             data["Purpose"],
-            data["Student_ID"] or None,
-            data["Staff_Name"] or None,
+            data["Student_ID"],
+            data["Staff_ID"],
             data["Check_In"].strftime("%H:%M"),
             data["Check_Out"].strftime("%H:%M"),
             pass_no,
+            branch_id_for_visitor,
         )
 
         add_visitor(values)
         st.success(f"Visitor logged successfully. Pass No: {pass_no}")
         st.rerun()
-
 
 @st.dialog("✏️ Edit Visitor")
 def edit_visitor_dialog(selected_visitor):
@@ -66,8 +86,8 @@ def edit_visitor_dialog(selected_visitor):
             data["Visitor_Name"],
             data["Visitor_Type"],
             data["Purpose"],
-            data["Student_ID"] or None,
-            data["Staff_Name"] or None,
+            data["Student_ID"],
+            data["Staff_ID"],
             data["Check_In"].strftime("%H:%M"),
             data["Check_Out"].strftime("%H:%M"),
             visitor_id,

@@ -8,17 +8,7 @@ def show_transportation_table(records):
         return []
 
     selected = st.dataframe(
-        records[
-            [
-                "Student_ID",
-                "Bus_No",
-                "Route",
-                "Pickup_Point",
-                "Driver",
-                "Distance_KM",
-                "Transport_Fee"
-            ]
-        ],
+        records,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

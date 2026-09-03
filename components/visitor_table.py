@@ -7,19 +7,12 @@ def show_visitor_table(visitors):
         st.warning("No visitor records found.")
         return []
 
+    # Show everything except the raw Staff_ID key — Meeting_With / Meeting_With_Designation
+    # (already joined in get_all_visitors) tell the same story more usefully.
+    display_cols = [c for c in visitors.columns if c != "Staff_ID"]
+
     selected = st.dataframe(
-        visitors[
-            [
-                "Visitor_ID",
-                "Pass_No",
-                "Visitor_Name",
-                "Visitor_Type",
-                "Purpose",
-                "Visit_Date",
-                "Check_In",
-                "Check_Out"
-            ]
-        ],
+        visitors[display_cols],
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

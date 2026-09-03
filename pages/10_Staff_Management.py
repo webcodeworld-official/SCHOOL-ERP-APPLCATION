@@ -18,7 +18,11 @@ if not st.session_state.get("authenticated"):
 # LOAD DATA
 # --------------------------------------------------
 
-staff = get_all_staff()
+staff = get_all_staff(branch_id=st.session_state.get("active_branch_id"))
+
+from database.branch_queries import get_branch_name
+current_branch_label = get_branch_name(st.session_state.get("active_branch_id"))
+st.caption(f"🏢 Viewing: **{current_branch_label}**")
 
 # --------------------------------------------------
 # PAGE HEADER

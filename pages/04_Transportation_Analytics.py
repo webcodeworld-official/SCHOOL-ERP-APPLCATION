@@ -20,9 +20,16 @@ transport = data["TRANSPORTATION"].copy()
 # PAGE TITLE
 # --------------------------------------------------
 
-st.title("🚌 Transportation Dashboard")
-st.caption("Monitor School Transportation Routes, Students and Fees")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("🚌 Transportation Dashboard")
+    st.caption("Monitor School Transportation Routes, Students and Fees")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_transport"):
+        load_data.clear()
+        st.rerun()
+        
 st.divider()
 
 # --------------------------------------------------

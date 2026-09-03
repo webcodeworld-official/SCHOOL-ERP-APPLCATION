@@ -22,9 +22,16 @@ staff["Joining_Date"] = pd.to_datetime(staff["Joining_Date"])
 # TITLE
 # --------------------------------------------------
 
-st.title("👨‍🏫 Staff Dashboard")
-st.caption("Comprehensive Analysis of School Staff")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("👨‍🏫 Staff Dashboard")
+    st.caption("Comprehensive Analysis of School Staff")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_staff"):
+        load_data.clear()
+        st.rerun()
+        
 st.divider()
 
 # --------------------------------------------------

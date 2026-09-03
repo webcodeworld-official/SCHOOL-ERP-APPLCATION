@@ -5,9 +5,12 @@ from datetime import date
 FINE_PER_DAY_LATE = 5  # ₹5/day overdue, matches how the sample data was generated
 
 
-def get_all_library_records():
+def get_all_library_records(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("SELECT * FROM library", conn)
+    if branch_id is None:
+        df = pd.read_sql("SELECT * FROM library", conn)
+    else:
+        df = pd.read_sql("SELECT * FROM library WHERE Branch_ID = ?", conn, params=(branch_id,))
     conn.close()
     return df
 
@@ -28,16 +31,13 @@ def issue_book(data):
     """Issue a new book. Return_Date and Fine are always NULL at issue time."""
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         INSERT INTO library
-        (Transaction_ID, Student_ID, Book_ID, Book_Name, Issue_Date, Due_Date, Return_Date, Fine)
-        VALUES (?,?,?,?,?,?,NULL,NULL)
+        (Transaction_ID, Student_ID, Book_ID, Book_Name, Issue_Date, Due_Date, Return_Date, Fine, Branch_ID)
+        VALUES (?,?,?,?,?,?,NULL,NULL,?)
     """, data)
-
     conn.commit()
     conn.close()
-
 
 def return_book(transaction_id, return_date):
     """Marks a book as returned, auto-calculating fine based on days late."""

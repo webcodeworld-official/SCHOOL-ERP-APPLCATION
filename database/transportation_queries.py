@@ -4,51 +4,55 @@ import pandas as pd
 FEE_PER_KM = 60  # used to suggest a fee when assigning a new route
 
 
-def get_all_transportation():
+def get_all_transportation(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("SELECT * FROM transportation", conn)
+    if branch_id is None:
+        df = pd.read_sql("SELECT * FROM transportation", conn)
+    else:
+        df = pd.read_sql("SELECT * FROM transportation WHERE Branch_ID = ?", conn, params=(branch_id,))
     conn.close()
     return df
 
 
-def get_distinct_routes():
-    """Returns one row per unique Transport_ID with its shared route details,
-    used to populate the route-picker dropdown when assigning a student."""
+def get_distinct_routes(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("""
+    query = """
         SELECT Transport_ID, Bus_No, Route, Driver, Driver_Phone, Distance_KM
         FROM transportation
-        GROUP BY Transport_ID
-    """, conn)
+    """
+    if branch_id is None:
+        df = pd.read_sql(query + " GROUP BY Transport_ID", conn)
+    else:
+        df = pd.read_sql(query + " WHERE Branch_ID = ? GROUP BY Transport_ID", conn, params=(branch_id,))
     conn.close()
     return df
 
-
-def get_unassigned_students():
-    """Active students who don't currently have a transport assignment."""
+def get_unassigned_students(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("""
+    base_query = """
         SELECT Student_ID, First_Name, Last_Name, Class, Section
         FROM student
         WHERE Status = 'Active'
         AND Student_ID NOT IN (SELECT Student_ID FROM transportation)
-    """, conn)
+    """
+    if branch_id is None:
+        df = pd.read_sql(base_query, conn)
+    else:
+        df = pd.read_sql(base_query + " AND Branch_ID = ?", conn, params=(branch_id,))
     conn.close()
     return df
-
 
 def add_transportation_record(data):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         INSERT INTO transportation
-        (Transport_ID, Student_ID, Bus_No, Route, Pickup_Point, Driver, Driver_Phone, Distance_KM, Transport_Fee)
-        VALUES (?,?,?,?,?,?,?,?,?)
+        (Transport_ID, Student_ID, Bus_No, Route, Pickup_Point, Driver, Driver_Phone, Distance_KM, Transport_Fee, Branch_ID)
+        VALUES (?,?,?,?,?,?,?,?,?,?)
     """, data)
-
     conn.commit()
     conn.close()
+
 
 
 def get_transportation_dict(student_id):

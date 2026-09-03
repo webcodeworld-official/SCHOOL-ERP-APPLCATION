@@ -10,9 +10,8 @@ from components.fees_form import fees_form
 
 @st.dialog("💰 Add Fee Record")
 def add_fee_dialog():
-    students_df = get_active_students()
+    students_df = get_active_students(branch_id=st.session_state.get("active_branch_id"))
     data = fees_form(students_df=students_df)
-
     if st.button("Create", use_container_width=True):
 
         if data["Student_ID"] is None:

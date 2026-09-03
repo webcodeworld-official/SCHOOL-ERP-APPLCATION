@@ -28,9 +28,15 @@ visitors["Check_In"] = pd.to_datetime(
 # PAGE TITLE
 # --------------------------------------------------
 
-st.title("🚶 Visitors Dashboard")
-st.caption("Interactive Dashboard for Visitor Management and Analysis")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("🚶 Visitors Dashboard")
+    st.caption("Interactive Dashboard for Visitor Management and Analysis")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_visitors"):
+        load_data.clear()
+        st.rerun()
 st.divider()
 
 # --------------------------------------------------

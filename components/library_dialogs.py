@@ -6,7 +6,6 @@ from database.library_queries import (
 )
 from components.library_form import library_form
 
-
 @st.dialog("📕 Issue Book")
 def issue_book_dialog():
 
@@ -14,6 +13,23 @@ def issue_book_dialog():
     preview = {"Transaction_ID": next_id}
 
     data = library_form(preview)
+
+    active_branch_id = st.session_state.get("active_branch_id")
+    if active_branch_id is None:
+        from database.branch_queries import get_all_branches
+        branches = get_all_branches()
+        if branches.empty:
+            st.error("No branches exist yet. Add a branch first (Settings).")
+            branch_id_for_issue = None
+        else:
+            branch_choice = st.selectbox(
+                "Which Branch's library?", branches["Branch_Name"].tolist(), key="issue_book_branch_pick"
+            )
+            branch_id_for_issue = int(
+                branches[branches["Branch_Name"] == branch_choice]["Branch_ID"].iloc[0]
+            )
+    else:
+        branch_id_for_issue = active_branch_id
 
     if st.button("Issue", use_container_width=True):
 
@@ -29,6 +45,10 @@ def issue_book_dialog():
             st.error("Due Date cannot be before Issue Date.")
             return
 
+        if branch_id_for_issue is None:
+            st.error("A branch must be selected.")
+            return
+
         values = (
             next_id,
             data["Student_ID"],
@@ -36,12 +56,12 @@ def issue_book_dialog():
             data["Book_Name"],
             str(data["Issue_Date"]),
             str(data["Due_Date"]),
+            branch_id_for_issue,
         )
 
         issue_book(values)
         st.success(f"Book issued successfully. Transaction ID: {next_id}")
         st.rerun()
-
 
 @st.dialog("✏️ Edit Issue Details")
 def edit_library_dialog(selected_record):

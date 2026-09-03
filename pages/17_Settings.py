@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from database.connection import get_connection, DATABASE
 from utils import load_custom_css
+from database.branch_queries import get_all_branches, add_branch
 
 if not st.session_state.get("authenticated"):
     st.error("Please log in first.")
@@ -25,7 +26,7 @@ THEMES = {
     },
     "Light Clean + Teal": {
         "panel": "#FFFFFF", "hairline": "#E2E8F0", "accent": "#0D9488",
-        "text_hi": "#0F172A", "text_lo": "#64748B", "bg_note": "#F8FAFC",
+        "text_hi": "#071C4E", "text_lo": "#64748B", "bg_note": "#F8FAFC",
     },
 }
 
@@ -202,3 +203,76 @@ st.caption(
     "`.streamlit/config.toml` and require restarting the app to change — "
     "that part can't be switched live. The custom cards above update instantly."
 )
+
+# --------------------------------------------------
+# USER MANAGEMENT (Admin only — page itself is already Admin-gated)
+# --------------------------------------------------
+
+from database.users_queries import get_all_users, username_exists, create_user, delete_user, count_admins
+
+st.markdown('<div class="section-label">User Management</div>', unsafe_allow_html=True)
+
+users_df = get_all_users()
+
+st.dataframe(users_df, use_container_width=True, hide_index=True)
+
+with st.expander("➕ Create New User"):
+    new_username = st.text_input("Username", key="new_user_username")
+    new_full_name = st.text_input("Full Name", key="new_user_fullname")
+    new_password = st.text_input("Password", type="password", key="new_user_password")
+    new_role = st.selectbox("Role", ["Admin", "Teacher", "Accountant"], key="new_user_role")
+
+    if st.button("Create User", use_container_width=True):
+        if not new_username or not new_password or not new_full_name:
+            st.error("All fields are required.")
+        elif username_exists(new_username):
+            st.error("This username already exists.")
+        elif len(new_password) < 6:
+            st.error("Password must be at least 6 characters.")
+        else:
+            create_user(new_username, new_password, new_role, new_full_name)
+            st.success(f"User '{new_username}' created successfully.")
+            st.rerun()
+
+with st.expander("🗑 Remove a User"):
+    if not users_df.empty:
+        username_to_remove = st.selectbox(
+            "Select user to remove",
+            users_df["Username"].tolist(),
+            key="remove_user_select"
+        )
+
+        if st.button("Remove User", use_container_width=True):
+            target_role = users_df[users_df["Username"] == username_to_remove]["Role"].iloc[0]
+
+            if target_role == "Admin" and count_admins() <= 1:
+                st.error("Cannot remove the last remaining Admin account.")
+            elif username_to_remove == st.session_state.get("username"):
+                st.error("You cannot remove your own account while logged in.")
+            else:
+                delete_user(username_to_remove)
+                st.success(f"User '{username_to_remove}' removed.")
+                st.rerun()
+
+st.markdown('<div class="section-label">Branch Management</div>', unsafe_allow_html=True)
+
+branches_df = get_all_branches()
+
+st.dataframe(branches_df, use_container_width=True, hide_index=True)
+
+with st.expander("➕ Add New Branch"):
+    branch_name = st.text_input("Branch Name", key="new_branch_name")
+    branch_address = st.text_input("Address", key="new_branch_address")
+    branch_city = st.text_input("City", key="new_branch_city")
+    branch_phone = st.text_input("Phone", key="new_branch_phone")
+    branch_principal = st.text_input("Principal Name", key="new_branch_principal")
+
+    if st.button("Create Branch", use_container_width=True, key="create_branch_btn"):
+        if not branch_name:
+            st.error("Branch Name is required.")
+        elif branch_name in branches_df["Branch_Name"].values:
+            st.error("A branch with this name already exists.")
+        else:
+            new_id = add_branch(branch_name, branch_address, branch_city, branch_phone, branch_principal)
+            st.success(f"Branch '{branch_name}' created (Branch_ID: {new_id}).")
+            st.rerun()

@@ -8,18 +8,7 @@ def show_fees_table(records):
         return []
 
     selected = st.dataframe(
-        records[
-            [
-                "Payment_ID",
-                "Student_ID",
-                "Month",
-                "Total_Fee",
-                "Amount_Paid",
-                "Balance",
-                "Payment_Mode",
-                "Payment_Status"
-            ]
-        ],
+        records,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

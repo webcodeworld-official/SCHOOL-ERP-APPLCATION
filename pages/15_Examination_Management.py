@@ -15,6 +15,9 @@ if not st.session_state.get("authenticated"):
 st.title("📝 Examination Management")
 st.caption("Enter marks in bulk for a class, or manage individual results.")
 st.divider()
+from database.branch_queries import get_branch_name
+current_branch_label = get_branch_name(st.session_state.get("active_branch_id"))
+st.caption(f"🏢 Viewing: **{current_branch_label}**")
 
 tab_entry, tab_manage = st.tabs(["📋 Bulk Marks Entry", "🔍 Manage Results"])
 
@@ -37,7 +40,10 @@ with tab_entry:
     with col4:
         section_selected = st.selectbox("Section", ["A", "B", "C"])
 
-    students = get_students_by_class_section(class_selected, section_selected)
+    students = get_students_by_class_section(
+    class_selected, section_selected,
+    branch_id=st.session_state.get("active_branch_id")
+)
 
     if students.empty:
         st.warning("No active students found for this Class + Section.")
@@ -92,7 +98,7 @@ with tab_entry:
 # ==================================================================
 with tab_manage:
 
-    results = get_all_results()
+    results = get_all_results(branch_id=st.session_state.get("active_branch_id"))
 
     col_search, col_exam, col_subject, col_result = st.columns(4)
 
@@ -125,8 +131,7 @@ with tab_manage:
     st.caption(f"Showing {len(filtered)} result(s)")
 
     selected = st.dataframe(
-        filtered[["Result_ID", "Student_ID", "Exam_Name", "Subject",
-                  "Marks_Obtained", "Total_Marks", "Percentage", "Grade", "Result"]],
+        filtered,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

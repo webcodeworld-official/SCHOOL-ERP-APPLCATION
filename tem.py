@@ -1,4 +1,7 @@
-import pandas as pd
-df = pd.read_excel("school_erp_realistic_data.xlsx", sheet_name="ATTENDANCE")
-print("Rows in Excel file:", len(df))
-print("Date range in Excel:", df["Date"].min(), "to", df["Date"].max())
+from database.connection import get_connection
+
+conn = get_connection()
+cursor = conn.cursor()
+cursor.execute("SELECT Class, typeof(Class) FROM class_subjects LIMIT 5")
+print(cursor.fetchall())
+conn.close()

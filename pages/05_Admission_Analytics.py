@@ -29,9 +29,16 @@ admission["Month"] = admission["Admission_Date"].dt.strftime("%b-%Y")
 # TITLE
 # --------------------------------------------------
 
-st.title("🎓 Admission Dashboard")
-st.caption("Monitor Admissions, Fees and Student Enrollment")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("🎓 Admission Dashboard")
+    st.caption("Monitor Admissions, Fees and Student Enrollment")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_admission"):
+        load_data.clear()
+        st.rerun()
+        
 st.divider()
 
 # --------------------------------------------------

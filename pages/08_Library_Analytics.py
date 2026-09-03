@@ -45,9 +45,16 @@ library["Month"] = library["Issue_Date"].dt.strftime("%b-%Y")
 # PAGE TITLE
 # --------------------------------------------------
 
-st.title("📚 Library Dashboard")
-st.caption("Monitor Book Issues, Returns, Library Usage and Fine Collection")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("📚 Library Dashboard")
+    st.caption("Monitor Book Issues, Returns, Library Usage and Fine Collection")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_library"):
+        load_data.clear()
+        st.rerun()
+        
 st.divider()
 
 # --------------------------------------------------

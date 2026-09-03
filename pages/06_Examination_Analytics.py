@@ -36,9 +36,15 @@ exam_df = exam_df.merge(
 # PAGE TITLE
 # --------------------------------------------------
 
-st.title("📚 Examination Dashboard")
-st.caption("Analyze Student Performance, Grades, Marks and Examination Results")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("📚 Examination Dashboard")
+    st.caption("Analyze Student Performance, Grades, Marks and Examination Results")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_examination"):
+        load_data.clear()
+        st.rerun()
 st.divider()
 
 # --------------------------------------------------

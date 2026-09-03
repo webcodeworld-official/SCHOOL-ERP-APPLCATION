@@ -17,6 +17,23 @@ def add_staff_dialog():
 
     data = staff_form(preview)
 
+    active_branch_id = st.session_state.get("active_branch_id")
+    if active_branch_id is None:
+        from database.branch_queries import get_all_branches
+        branches = get_all_branches()
+        if branches.empty:
+            st.error("No branches exist yet. Add a branch first (Settings).")
+            branch_id_for_new_staff = None
+        else:
+            branch_choice = st.selectbox(
+                "Assign to Branch", branches["Branch_Name"].tolist(), key="add_staff_branch_pick"
+            )
+            branch_id_for_new_staff = int(
+                branches[branches["Branch_Name"] == branch_choice]["Branch_ID"].iloc[0]
+            )
+    else:
+        branch_id_for_new_staff = active_branch_id
+
     if st.button("Save", use_container_width=True):
 
         if not data["Employee_Name"]:
@@ -37,6 +54,7 @@ def add_staff_dialog():
         if data["Email"] and email_exists(data["Email"]):
             st.warning("⚠️ This email is already used by another staff member.")
 
+        
         values = (
             next_id,
             data["Employee_Name"],
@@ -50,6 +68,7 @@ def add_staff_dialog():
             data["Phone"],
             data["Email"],
             data["Status"],
+            branch_id_for_new_staff,
         )
 
         add_staff(values)

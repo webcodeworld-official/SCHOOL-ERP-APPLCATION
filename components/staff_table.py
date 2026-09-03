@@ -8,16 +8,7 @@ def show_staff_table(staff):
         return []
 
     selected = st.dataframe(
-        staff[
-            [
-                "Staff_ID",
-                "Employee_Name",
-                "Department",
-                "Designation",
-                "Phone",
-                "Status"
-            ]
-        ],
+        staff,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

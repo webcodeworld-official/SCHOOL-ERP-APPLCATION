@@ -2,12 +2,14 @@ from database.connection import get_connection
 import pandas as pd
 
 
-def get_all_staff():
+def get_all_staff(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("SELECT * FROM staff", conn)
+    if branch_id is None:
+        df = pd.read_sql("SELECT * FROM staff", conn)
+    else:
+        df = pd.read_sql("SELECT * FROM staff WHERE Branch_ID = ?", conn, params=(branch_id,))
     conn.close()
     return df
-
 
 def get_next_staff_id():
     conn = get_connection()
@@ -68,17 +70,15 @@ def email_exists(email, exclude_staff_id=None):
 def add_staff(data):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         INSERT INTO staff
         (
             Staff_ID, Employee_Name, Gender, Department, Designation,
             Qualification, Experience_Yrs, Joining_Date, Salary,
-            Phone, Email, Status
+            Phone, Email, Status, Branch_ID
         )
-        VALUES (?,?,?,?,?, ?,?,?,?, ?,?,?)
+        VALUES (?,?,?,?,?, ?,?,?,?, ?,?,?,?)
     """, data)
-
     conn.commit()
     conn.close()
 

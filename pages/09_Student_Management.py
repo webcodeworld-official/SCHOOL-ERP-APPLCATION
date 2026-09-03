@@ -18,7 +18,11 @@ if not st.session_state.get("authenticated"):
 # LOAD DATA
 # --------------------------------------------------
 
-students = get_all_students()
+students = get_all_students(branch_id=st.session_state.get("active_branch_id"))
+
+from database.branch_queries import get_branch_name
+current_branch_label = get_branch_name(st.session_state.get("active_branch_id"))
+st.caption(f"🏢 Viewing: **{current_branch_label}**")
 
 # Create Full Name column
 students["Full_Name"] = (
@@ -167,10 +171,3 @@ with btn4:
             use_container_width=True
         )
 
-# --------------------------------------------------
-# DEBUG (Temporary)
-# --------------------------------------------------
-
-if len(selected_student) > 0:
-    st.success("✅ Student Selected")
-    st.write(selected_student)

@@ -72,11 +72,22 @@ def fees_form(record=None, students_df=None):
             key=f"exam_{key_suffix}"
         )
 
+        from database.admission_queries import get_admission_discount_percentage
+
+        default_discount = record.get("Discount", 0)
+        if not is_edit and student_id:
+            discount_pct = get_admission_discount_percentage(student_id)
+            if discount_pct > 0:
+                default_discount = int(tuition_fee * discount_pct / 100)
+                st.caption(f"💡 Auto-suggested from Admission record: {discount_pct}% discount")
+
+        discount_key_suffix = f"{key_suffix}_{student_id}"
+
         discount = st.number_input(
             "Discount",
             min_value=0,
-            value=int(record.get("Discount", 0)),
-            key=f"discount_{key_suffix}"
+            value=int(default_discount),
+            key=f"discount_{discount_key_suffix}"
         )
 
         total_fee = tuition_fee + transport_fee + library_fee + exam_fee - discount

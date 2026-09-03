@@ -15,7 +15,11 @@ if not st.session_state.get("authenticated"):
     st.error("Please log in first.")
     st.stop()
 
-visitors = get_all_visitors()
+visitors = get_all_visitors(branch_id=st.session_state.get("active_branch_id"))
+
+from database.branch_queries import get_branch_name
+current_branch_label = get_branch_name(st.session_state.get("active_branch_id"))
+st.caption(f"🏢 Viewing: **{current_branch_label}**")
 
 st.title("🚶 Visitor Management")
 st.caption("Manage all visitor logs from the database.")

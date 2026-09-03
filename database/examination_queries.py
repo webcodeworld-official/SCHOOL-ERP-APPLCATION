@@ -15,9 +15,16 @@ def grade_for(pct):
     return "F"
 
 
-def get_all_results():
+def get_all_results(branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("SELECT * FROM examination", conn)
+    if branch_id is None:
+        df = pd.read_sql("SELECT * FROM examination", conn)
+    else:
+        df = pd.read_sql("""
+            SELECT e.* FROM examination e
+            JOIN student s ON e.Student_ID = s.Student_ID
+            WHERE s.Branch_ID = ?
+        """, conn, params=(branch_id,))
     conn.close()
     return df
 
@@ -31,14 +38,20 @@ def get_next_result_id():
     return 1 if result is None else int(result) + 1
 
 
-def get_students_by_class_section(class_, section):
+def get_students_by_class_section(class_, section, branch_id=None):
     conn = get_connection()
-    df = pd.read_sql("""
+    base_query = """
         SELECT Student_ID, First_Name, Last_Name, Roll_No
         FROM student
         WHERE Class = ? AND Section = ? AND Status = 'Active'
-        ORDER BY CAST(Roll_No AS INTEGER)
-    """, conn, params=(class_, section))
+    """
+    if branch_id is None:
+        df = pd.read_sql(base_query + " ORDER BY CAST(Roll_No AS INTEGER)", conn, params=(class_, section))
+    else:
+        df = pd.read_sql(
+            base_query + " AND Branch_ID = ? ORDER BY CAST(Roll_No AS INTEGER)",
+            conn, params=(class_, section, branch_id)
+        )
     conn.close()
     return df
 

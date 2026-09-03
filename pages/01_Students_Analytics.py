@@ -13,7 +13,6 @@ if not st.session_state.get("authenticated"):
 # -------------------------------------------------------
 
 data = load_data()
-
 students = data["STUDENT"].copy()
 
 # -------------------------------------------------------
@@ -33,8 +32,15 @@ students["Age"] = (
 # TITLE
 # -------------------------------------------------------
 
-st.title("🎓 Students Dashboard")
-st.caption("Comprehensive Analysis of Student Information")
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("🎓 Students Dashboard")
+    st.caption("Comprehensive Analysis of Student Information")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_students"):
+        load_data.clear()
+        st.rerun()
 
 st.divider()
 

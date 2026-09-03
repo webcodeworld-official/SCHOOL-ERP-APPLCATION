@@ -22,18 +22,7 @@ def show_library_table(records):
     display_df["Status"] = display_df.apply(compute_status, axis=1)
 
     selected = st.dataframe(
-        display_df[
-            [
-                "Transaction_ID",
-                "Student_ID",
-                "Book_Name",
-                "Issue_Date",
-                "Due_Date",
-                "Return_Date",
-                "Fine",
-                "Status"
-            ]
-        ],
+        display_df,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

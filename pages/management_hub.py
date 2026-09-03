@@ -46,6 +46,9 @@ modules = [
     ("🚌", "Transport Management", "Bus routes and student assignments", "pages/13_Transport_Management.py"),
     ("💰", "Fee Management", "Invoicing, payments, and balances", "pages/14_Fee_Management.py"),
     ("📝", "Examination Management", "Bulk marks entry and results", "pages/15_Examination_Management.py"),
+    ("📖", "Academic Structure", "Subjects, curriculum, teacher assignments, and timetables", "pages/Academic_Structure.py"),
+    ("🗓️", "Leave Management", "Submit and review staff leave requests", "pages/Leave_Management.py"),
+    ("⚙️", "Fee Structure Management", "Define fee templates and bulk-generate schedules", "pages/Fee_Structure_Management.py"),
 ]
 
 for row_start in range(0, len(modules), 4):

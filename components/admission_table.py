@@ -8,17 +8,7 @@ def show_admission_table(records):
         return []
 
     selected = st.dataframe(
-        records[
-            [
-                "Admission_ID",
-                "Student_ID",
-                "Admission_Date",
-                "Previous_School",
-                "Admission_Status",
-                "Entrance_Test",
-                "Admission_Fee"
-            ]
-        ],
+        records,
         use_container_width=True,
         hide_index=True,
         selection_mode="single-row",

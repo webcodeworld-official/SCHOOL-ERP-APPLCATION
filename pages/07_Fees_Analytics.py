@@ -37,9 +37,16 @@ fees["Payment_Date"] = pd.to_datetime(fees["Payment_Date"], errors="coerce")
 # PAGE TITLE
 # --------------------------------------------------
 
-st.title("💰 Fees Dashboard")
-st.caption("Monitor Fee Collection, Pending Payments and Revenue Analysis")
-
+col_title, col_refresh = st.columns([5, 1])
+with col_title:
+    st.title("💰 Fees Dashboard")
+    st.caption("Monitor Fee Collection, Pending Payments and Revenue Analysis")
+with col_refresh:
+    st.write("")
+    if st.button("🔄 Refresh", use_container_width=True, key="refresh_fees"):
+        load_data.clear()
+        st.rerun()
+        
 st.divider()
 
 # --------------------------------------------------

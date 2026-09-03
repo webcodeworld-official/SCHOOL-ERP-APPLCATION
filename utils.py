@@ -206,3 +206,83 @@ def apply_dark_theme(fig):
         margin=dict(t=50, b=30, l=30, r=30),
     )
     return fig
+
+import phonenumbers
+
+COUNTRY_OPTIONS = {
+    "India (+91)": "IN",
+    "United States (+1)": "US",
+    "United Kingdom (+44)": "GB",
+    "UAE (+971)": "AE",
+    "Canada (+1)": "CA",
+    "Australia (+61)": "AU",
+}
+
+def format_and_validate_phone(national_number, region_code):
+    """
+    Takes the digits the user typed (no country code) plus which country
+    they selected, and returns (E.164_formatted_string, is_valid).
+    E.164 looks like '+911234567890' — the standard international format.
+    """
+    try:
+        parsed = phonenumbers.parse(national_number, region_code)
+        if not phonenumbers.is_valid_number(parsed):
+            return None, False
+        formatted = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        return formatted, True
+    except phonenumbers.NumberParseException:
+        return None, False
+
+
+def split_stored_phone(stored_value):
+    """
+    Takes whatever's currently in the database (could be an old plain
+    10-digit number, or a new '+91...' E.164 string) and splits it back
+    into (region_code, national_number) so the Edit form can pre-fill correctly.
+    """
+    if not stored_value:
+        return "IN", ""
+
+    stored_value = str(stored_value)
+
+    if stored_value.startswith("+"):
+        try:
+            parsed = phonenumbers.parse(stored_value, None)
+            region = phonenumbers.region_code_for_number(parsed) or "IN"
+            national = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
+            national = national.replace(" ", "").replace("-", "")
+            return region, national
+        except phonenumbers.NumberParseException:
+            return "IN", stored_value
+
+    # Old-format legacy data with no country code — assume India, since
+    # that's what all your existing records were generated as.
+    return "IN", stored_value
+
+STATE_CITY_MAP = {
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Prayagraj", "Noida", "Ghaziabad", "Meerut"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro"],
+    "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
+    "Delhi": ["New Delhi"],
+    "Karnataka": ["Bengaluru", "Mysuru", "Hubballi"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+    "West Bengal": ["Kolkata", "Howrah", "Durgapur"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar"],
+    "Haryana": ["Gurugram", "Faridabad", "Panipat"],
+    "Telangana": ["Hyderabad", "Warangal"],
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada"],
+    "Kerala": ["Kochi", "Thiruvananthapuram", "Kozhikode"],
+    "Odisha": ["Bhubaneswar", "Cuttack"],
+    "Assam": ["Guwahati", "Dibrugarh"],
+    "Chhattisgarh": ["Raipur", "Bhilai"],
+    "Uttarakhand": ["Dehradun", "Haridwar"],
+    "Himachal Pradesh": ["Shimla", "Manali"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu"],
+    "Goa": ["Panaji", "Margao"],
+}
+
+ALL_STATES = list(STATE_CITY_MAP.keys()) + ["Other"]
